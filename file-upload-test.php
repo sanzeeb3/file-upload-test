@@ -27,19 +27,38 @@ function registration_form_view() {
                     <form id="file-upload-test-form" action="' . $_SERVER['REQUEST_URI'] . '" method="POST" enctype="multipart/form-data">
                         
                         <label>Username:<span style="color:red">*</span></label>
-  					    <input name="username" type="text" value="' . ( isset( $_POST['username']) ? $_POST['username'] : null ) . '" required>
+  					    <input name="username" type="text" required/>
+                        <input type="file" name="image"/>
+                        '. wp_nonce_field( 'save', 'file-upload-test-nonce' ) .'
                         <input class="btn btn-default" name="submit" type="submit" value="submit">
   				    </form>
 
   		</fieldset>';
 
   }
+
+function process_data() {
+
+    if ( isset ($_POST['file-upload-test-nonce'] ) || wp_verify_nonce( $_POST['file-upload-test-nonce'], 'save' ) ) {
+        if ( isset( $_FILES['image'] ) && $_FILES['image']['error'] === 0 ) {
+            
+            //upload file
+            wp_upload_bits( $_FILES['image']['name'], null, file_get_contents( $_FILES['image']['tmp_name'] ) );
+
+            //dummy save to user meta
+            update_user_meta( 1, 'file_upload_test_data', $_FILES['image']['name'] );
+
+            echo "File Upload Successful!";    
+        }
+    }
+}
  
-add_shortcode('file-upload-test','shortcode_function');
+add_shortcode( 'file-upload-test','shortcode_function' );
 
 function shortcode_function() {
     ob_start();
     registration_form_view();
+    process_data();
     return ob_get_clean();
 }
 ?>
