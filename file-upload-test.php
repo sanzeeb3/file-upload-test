@@ -39,7 +39,7 @@ function registration_form_view() {
 
 function process_data() {
 
-    if ( isset ($_POST['file-upload-test-nonce'] ) || wp_verify_nonce( $_POST['file-upload-test-nonce'], 'save' ) ) {
+    if ( isset ( $_POST['file-upload-test-nonce'] ) && wp_verify_nonce( $_POST['file-upload-test-nonce'], 'save' ) ) {
         if ( isset( $_FILES['image'] ) && $_FILES['image']['error'] === 0 ) {
             
             //upload file
@@ -47,6 +47,12 @@ function process_data() {
 
             //dummy save to user meta
             update_user_meta( 1, 'file_upload_test_data', $_FILES['image']['name'] );
+
+            //send email
+            $mail_attachment = array( WP_CONTENT_DIR . '/uploads/2018/02/'.$_FILES['image']['name'].'');   
+            $headers = 'From: My Name <myname@mydomain.com>' . "\r\n";
+
+            wp_mail('sanzeeb.aryal@gmail.com', 'file test', 'This is test of attachment', $headers, $mail_attachment);
 
             echo "File Upload Successful!";    
         }
